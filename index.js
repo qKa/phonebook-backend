@@ -32,8 +32,31 @@ const generateId = () => {
 
 app.use(express.json());
 
-// Apply the Morgan middleware
-app.use(morgan("tiny"));
+// Custom Morgan token to log the request body for POST requests
+morgan.token("body", (req) => {
+  if (req.method === "POST") {
+    return JSON.stringify(req.body);
+  }
+  return null;
+});
+
+// Custom Morgan format function to conditionally include the body token
+const morganFormat = (tokens, req, res) => {
+  const body = tokens.body(req, res);
+  return [
+    tokens.method(req, res),
+    tokens.url(req, res),
+    tokens.status(req, res),
+    tokens.res(req, res, "content-length"),
+    "-",
+    tokens["response-time"](req, res),
+    "ms",
+    body ? `${body}` : "",
+  ].join(" ");
+};
+
+// Apply the Morgan middleware using the custom format function
+app.use(morgan(morganFormat));
 
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: "unknown endpoint" });
