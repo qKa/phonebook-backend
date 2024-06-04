@@ -1,6 +1,13 @@
 const express = require("express");
 const app = express();
 
+app.use(express.json());
+
+const generateId = () => {
+  const id = Math.floor(Math.random() * 1000000);
+  return id;
+};
+
 let persons = [
   {
     id: 1,
@@ -53,6 +60,21 @@ app.get("/api/persons/:id", (request, response) => {
     response.status(404).end();
     // response.status(404).send({ error: "Person not found" });
   }
+});
+
+app.post("/api/persons", (request, response) => {
+  const body = request.body;
+  console.log("[POST] Request:", body);
+
+  const person = {
+    id: generateId(),
+    name: body.name,
+    number: body.number,
+  };
+
+  persons = persons.concat(person);
+  console.log(`[POST] New entry ID: '${person.id}' Name: '${person.name}' Number: '${person.number}' created.`);
+  response.json(person);
 });
 
 app.delete("/api/persons/:id", (request, response) => {
