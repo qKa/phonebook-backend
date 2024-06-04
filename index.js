@@ -55,6 +55,19 @@ app.get("/api/persons/:id", (request, response) => {
   }
 });
 
+app.delete("/api/persons/:id", (request, response) => {
+  const id = Number(request.params.id);
+  const personIndex = persons.findIndex((person) => person.id === id);
+
+  if (personIndex !== -1) {
+    persons = persons.filter((person) => person.id !== id);
+    response.status(204).end(); // 204 No Content
+  } else {
+    response.statusMessage = "Person Not Found";
+    response.status(404).end();
+  }
+});
+
 const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
