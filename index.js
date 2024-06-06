@@ -30,6 +30,7 @@ const generateId = () => {
   return id;
 };
 
+app.use(express.static("dist"));
 app.use(express.json());
 
 // Custom Morgan token to log the request body for POST requests
