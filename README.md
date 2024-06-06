@@ -33,6 +33,8 @@ This repository contains the backend implementation for the Phonebook applicatio
 
 ## API Endpoints
 
+[https://phonebook-backend-vrgo.onrender.com](https://phonebook-backend-vrgo.onrender.com)
+
 ### Get All Phonebook Entries
 
 - **URL:** `/api/persons`
