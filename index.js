@@ -4,11 +4,6 @@ const morgan = require("morgan");
 const app = express();
 const Person = require("./models/person");
 
-const generateId = () => {
-  const id = Math.floor(Math.random() * 1000000);
-  return id;
-};
-
 app.use(express.static("dist"));
 app.use(express.json());
 
@@ -98,47 +93,37 @@ app.post("/api/persons", (request, response) => {
   //   console.log("[POST] Request:", body);
 
   if (!body.name) {
-    return response.status(400).json({
-      error: "name is missing",
-    });
+    return response.status(400).json({ error: "name is missing" });
   }
 
   if (!body.number) {
-    return response.status(400).json({
-      error: "number is missing",
-    });
+    return response.status(400).json({ error: "number is missing" });
   }
 
-  const nameExists = persons.some((person) => person.name === body.name);
-
-  if (nameExists) {
-    return response.status(400).json({
-      error: "Name must be unique",
-    });
-  }
-
-  const person = {
-    id: generateId(),
+  const newPerson = new Person({
     name: body.name,
     number: body.number,
-  };
+  });
 
-  persons = persons.concat(person);
-  //   console.log(`[POST] New entry ID: '${person.id}' Name: '${person.name}' Number: '${person.number}' created.`);
-  response.json(person);
+  newPerson.save().then((savedPerson) => {
+    response.json(savedPerson);
+  });
 });
 
 app.delete("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const personIndex = persons.findIndex((person) => person.id === id);
+  const id = request.params.id;
 
-  if (personIndex !== -1) {
-    persons = persons.filter((person) => person.id !== id);
-    response.status(204).end(); // 204 No Content
-  } else {
-    response.statusMessage = "Person Not Found";
-    response.status(404).end();
-  }
+  Person.findByIdAndDelete(id)
+    .then((person) => {
+      if (!person) {
+        return response.status(404).json({ statusMessage: "Person Not Found" });
+      }
+      response.status(204).end(); // 204 No Content
+    })
+    .catch((error) => {
+      console.error(error);
+      response.status(500).json({ statusMessage: "Internal Server Error" });
+    });
 });
 
 app.use(unknownEndpoint);
