@@ -1,29 +1,8 @@
+require("dotenv").config();
 const express = require("express");
 const morgan = require("morgan");
 const app = express();
-
-let persons = [
-  {
-    id: 1,
-    name: "Arto Hellas",
-    number: "040-123456",
-  },
-  {
-    id: 2,
-    name: "Ada Lovelace",
-    number: "39-44-5323523",
-  },
-  {
-    id: 3,
-    name: "Dan Abramov",
-    number: "12-43-234345",
-  },
-  {
-    id: 4,
-    name: "Mary Poppendieck",
-    number: "39-23-6423122",
-  },
-];
+const Person = require("./models/person");
 
 const generateId = () => {
   const id = Math.floor(Math.random() * 1000000);
@@ -68,30 +47,50 @@ app.get("/", (request, response) => {
 });
 
 app.get("/info", (request, response) => {
-  const numberOfPersons = persons.length;
-  const currentDateTime = new Date();
-  const responseText = `
+  Person.countDocuments({})
+    .then((numberOfPersons) => {
+      const currentDateTime = new Date();
+      const responseText = `
     <p>Phonebook has info for ${numberOfPersons} people</p>
     <p>${currentDateTime}</p>
-  `;
-  response.send(responseText);
+    `;
+      response.send(responseText);
+    })
+    .catch((error) => {
+      console.error(error);
+      response.status(500).json({ error: "Internal Server Error" });
+    });
 });
 
 app.get("/api/persons", (request, response) => {
-  response.json(persons);
+  Person.find({})
+    .then((persons) => {
+      response.json(persons);
+    })
+    .catch((error) => {
+      console.error(error);
+      response.status(500).send({ error: "Internal Server Error" });
+    });
 });
 
 app.get("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const person = persons.find((person) => person.id === id);
+  // const id = Number(request.params.id);
+  const id = request.params.id;
 
-  if (person) {
-    response.json(person);
-  } else {
-    response.statusMessage = "Person Not Found";
-    response.status(404).end();
-    // response.status(404).send({ error: "Person not found" });
-  }
+  Person.findById(id)
+    .then((person) => {
+      if (person) {
+        response.json(person);
+      } else {
+        response.statusMessage = "Person Not Found";
+        response.status(404).send({ error: "Person Not Found" });
+        // response.status(404).end();
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+      response.status(400).send({ error: "malformatted id" });
+    });
 });
 
 app.post("/api/persons", (request, response) => {
