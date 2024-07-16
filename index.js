@@ -37,7 +37,7 @@ app.get("/", (request, response) => {
   response.send("<h1>Phonebook backend</h1>");
 });
 
-app.get("/info", (request, response) => {
+app.get("/info", (request, response, next) => {
   Person.countDocuments({})
     .then((numberOfPersons) => {
       const currentDateTime = new Date();
@@ -47,10 +47,7 @@ app.get("/info", (request, response) => {
     `;
       response.send(responseText);
     })
-    .catch((error) => {
-      console.error(error);
-      response.status(500).json({ error: "Internal Server Error" });
-    });
+    .catch((error) => next(error));
 });
 
 app.get("/api/persons", (request, response, next) => {
