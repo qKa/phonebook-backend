@@ -111,9 +111,7 @@ app.post("/api/persons", (request, response) => {
 });
 
 app.delete("/api/persons/:id", (request, response) => {
-  const id = request.params.id;
-
-  Person.findByIdAndDelete(id)
+  Person.findByIdAndDelete(request.params.id)
     .then((person) => {
       if (!person) {
         return response.status(404).json({ statusMessage: "Person Not Found" });
